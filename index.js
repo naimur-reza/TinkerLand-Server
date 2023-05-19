@@ -51,6 +51,15 @@ async function run() {
       const result = await toysDb.findOne({ _id: new ObjectId(id) });
       res.send(result);
     });
+
+    // find my toys data from db
+    app.get("/myToys", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await toysDb.find(query).toArray();
+      res.send(result);
+      // console.log(email);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
