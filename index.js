@@ -26,6 +26,7 @@ const client = new MongoClient(uri, {
 });
 
 const toysDb = client.db("toysDb").collection("toysCollection");
+const toysSub = client.db("toysDb").collection("toySub");
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -48,7 +49,9 @@ async function run() {
     // find single data from db
     app.get("/toys/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await toysDb.findOne({ _id: new ObjectId(id) });
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await toysDb.findOne(query);
       res.send(result);
     });
 
@@ -70,6 +73,13 @@ async function run() {
       res.send(result);
     });
 
+    // get sub category items
+    app.get("/subToys", async (req, res) => {
+      const query = req.query.sub;
+      const filter = { sub_category: query };
+      const result = await toysDb.find(filter).limit(3).toArray();
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
