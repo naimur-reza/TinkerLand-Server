@@ -35,7 +35,12 @@ async function run() {
 
     // get toys from db
     app.get("/toys", async (req, res) => {
-      const result = await toysDb.find().toArray();
+      const search = req.query.search || "";
+      const page = parseInt(req.query.page) || 0;
+      const skip = page * 20;
+      const query = { name: { $regex: search, $options: "i" } };
+
+      const result = await toysDb.find(query).skip(skip).limit(20).toArray();
       res.send(result);
     });
 
@@ -58,10 +63,20 @@ async function run() {
     // find my toys data from db
     app.get("/myToys", async (req, res) => {
       const email = req.query.email;
+      const sortText = req.query.text;
       const query = { email: email };
+
+      if (sortText == "Price: High To Low") {
+        const result = await toysDb.find(query).sort({ price: -1 }).toArray();
+        return res.send(result);
+      } else if (sortText == "Price: Low To High") {
+        const result = await toysDb.find(query).sort({ price: 1 }).toArray();
+        return res.send(result);
+      }
+      console.log(sortText);
+
       const result = await toysDb.find(query).toArray();
       res.send(result);
-      // console.log(email);
     });
 
     // delete from my toys
@@ -93,6 +108,12 @@ async function run() {
       };
       const result = await toysDb.updateOne(filter, updatedToy);
       res.send(result);
+    });
+
+    // get length of all toys
+    app.get("/totalToys", async (req, res) => {
+      const result = await toysDb.estimatedDocumentCount();
+      res.send({ totalToys: result });
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
