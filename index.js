@@ -77,7 +77,21 @@ async function run() {
     app.get("/subToys", async (req, res) => {
       const query = req.query.sub;
       const filter = { sub_category: query };
-      const result = await toysDb.find(filter).limit(3).toArray();
+      const result = await toysDb.find(filter).limit(6).toArray();
+      res.send(result);
+    });
+
+    // updating single toy from here
+    app.patch("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const body = req.body;
+      const updatedToy = {
+        $set: {
+          ...body,
+        },
+      };
+      const result = await toysDb.updateOne(filter, updatedToy);
       res.send(result);
     });
     // Send a ping to confirm a successful connection
